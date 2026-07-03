@@ -22,7 +22,12 @@ app.get('/', (req, res) => {
 app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
-
+app.get('/api/test-login-route', (req, res) => {
+    res.json({
+        success: true,
+        authRouteShouldBe: '/api/auth/login'
+    });
+});
 app.use('/api/auth', authRoutes);
 app.use('/api/category', categoryRoutes);
 app.use('/api/supplier', supplierRoutes);
