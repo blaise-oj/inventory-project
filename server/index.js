@@ -28,6 +28,13 @@ app.get('/api/test-login-route', (req, res) => {
         authRouteShouldBe: '/api/auth/login'
     });
 });
+app.post('/api/auth/test-login', (req, res) => {
+    res.json({
+        success: true,
+        message: "POST auth route is working",
+        body: req.body
+    });
+});
 app.use('/api/auth', authRoutes);
 app.use('/api/category', categoryRoutes);
 app.use('/api/supplier', supplierRoutes);
