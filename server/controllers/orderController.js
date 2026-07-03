@@ -2,17 +2,22 @@ import Product from '../models/Product.js'
 import Order from '../models/Order.js'
 
 const addOrder = async (req, res) => {
-    try{
-        const {productId, quantity, total} = req.body;
+    try {
+        const { productId, quantity, total } = req.body;
         const userId = req.user._id;
-        const product = await Product.findById({_id: productId});
-        if(!product) {
-            return res.status(404).json({error: "Product not found in order"})
-            
+        const product = await Product.findOne({
+            _id: productId,
+            isDeleted: { $ne: true }
+        });
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found in order"
+            });
         }
         if (quantity > product.stock) {
-            return res.status(400).json({error: "Not Enough Stock"})
-        }else {
+            return res.status(400).json({ error: "Not Enough Stock" })
+        } else {
             product.stock -= parseInt(quantity);
             await product.save();
         }
@@ -23,11 +28,11 @@ const addOrder = async (req, res) => {
             totalPrice: total
 
         })
-         await orderObj.save();
-         return res.status(200).json({success: true, message: "Order Added Successfully"})
+        await orderObj.save();
+        return res.status(200).json({ success: true, message: "Order Added Successfully" })
     } catch (error) {
         console.log(error)
-        return res.status(500).json({success: false, error: "server error in adding order" })
+        return res.status(500).json({ success: false, error: "server error in adding order" })
     }
 
 }
@@ -35,17 +40,19 @@ const getOrders = async (req, res) => {
     try {
         const userId = req.user._id;
         let query = {};
-        if(req.user.role === "customer") {
-            query = {customer: userId};
+        if (req.user.role === "customer") {
+            query = { customer: userId };
         }
-        const orders = await Order.find(query).populate({path: 'product', populate:{
-            path: 'categoryId',
-            select: 'categoryName'
-        }, select: 'name price'}).populate('customer', 'name email')
+        const orders = await Order.find(query).populate({
+            path: 'product', populate: {
+                path: 'categoryId',
+                select: 'categoryName'
+            }, select: 'name price'
+        }).populate('customer', 'name email')
         return res.status(200).json({ success: true, orders });
     } catch (error) {
         console.error('Error fetching orders:', error);
         return res.status(500).json({ success: false, message: 'Server error in fetching orders' });
     }
 }
-export {addOrder, getOrders}
+export { addOrder, getOrders }
